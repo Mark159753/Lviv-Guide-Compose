@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--HomeScreen-->
+    <string name="home_screen_header_title">Ready to explore Lviv?</string>
+    <string name="home_screen_last_news_title">Latest news</string>
+    <string name="home_screen_places_to_explore_title">Places to explore</string>
+    <string name="home_screen_search_hint_title">Search places</string>
+</resources>

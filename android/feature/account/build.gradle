@@ -1,0 +1,81 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.dagger.hilt.android'
+    id 'kotlin-kapt'
+}
+
+android {
+    namespace 'com.example.account'
+    compileSdk rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion rootProject.ext.compose_version
+    }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+dependencies {
+
+    implementation "androidx.core:core-ktx:$androidx_core_version"
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
+    implementation "com.google.android.material:material:$material_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_runtime"
+    implementation "androidx.activity:activity-compose:$compose_activity"
+    implementation platform("androidx.compose:compose-bom:$compose_bom")
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.ui:ui-graphics"
+    implementation "androidx.compose.ui:ui-tooling-preview"
+    implementation 'androidx.compose.material3:material3'
+    testImplementation "junit:junit:$junit_version"
+    androidTestImplementation "androidx.test.ext:junit:$junit_ext_version"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_core_version"
+    androidTestImplementation platform("androidx.compose:compose-bom:$compose_bom")
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+    debugImplementation "androidx.compose.ui:ui-tooling"
+    debugImplementation "androidx.compose.ui:ui-test-manifest"
+
+    //Hilt
+    implementation "com.google.dagger:hilt-android:$hilt_android"
+    implementation "androidx.hilt:hilt-navigation-compose:$hilt_navigation"
+    implementation "androidx.hilt:hilt-work:$hilt_work"
+    kapt "androidx.hilt:hilt-compiler:$hilt_kapt_version"
+    kapt "com.google.dagger:hilt-compiler:$dagger_hilt_kapt_version"
+
+    //Material2
+    implementation "androidx.compose.material:material:$compose_material"
+
+    implementation "androidx.compose.ui:ui-util:$compose_material"
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:$compose_lifecycle"
+
+    implementation(project(":core:common"))
+    implementation(project(":core:ui"))
+}
