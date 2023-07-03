@@ -1,0 +1,63 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type CategoryEntity {
+  id: Int!
+  name: String!
+}
+
+type LocationEntity {
+  id: Int!
+  lat: Float!
+  lon: Float!
+}
+
+type PlaceEntity {
+  id: Int!
+  title: String!
+  description: String!
+  categoryId: Int!
+  locationId: Int!
+  headImage: String!
+  rating: Float!
+  address: String!
+  category: CategoryEntity!
+  location: LocationEntity!
+}
+
+type Query {
+  findAll: [PlaceEntity!]!
+  category(id: Int!): CategoryEntity!
+  locations: [LocationEntity!]!
+  location(id: Int!): LocationEntity!
+  categories: [CategoryEntity!]!
+}
+
+type Mutation {
+  createPlace(createPlaceInput: CreatePlaceInput!): PlaceEntity!
+  removePlace(id: Int!): PlaceEntity!
+  createLocation(createLocationInput: CreateLocationInput!): LocationEntity!
+  removeLocation(id: Int!): LocationEntity!
+  createCategory(createCategoryInput: CreateCategoryInput!): CategoryEntity!
+  removeCategory(id: Int!): CategoryEntity!
+}
+
+input CreatePlaceInput {
+  title: String!
+  description: String!
+  headImage: String!
+  rating: Float!
+  address: String!
+  location: CreateLocationInput!
+  categoryId: Int!
+}
+
+input CreateLocationInput {
+  lat: Float!
+  lon: Float!
+}
+
+input CreateCategoryInput {
+  name: String!
+}

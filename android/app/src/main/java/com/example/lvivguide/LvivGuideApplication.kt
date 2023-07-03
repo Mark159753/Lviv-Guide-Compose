@@ -43,6 +43,7 @@ class LvivGuideApplication: Application(), Configuration.Provider, ImageLoaderFa
                     .maxSizePercent(0.2)
                     .build()
             }
+            .respectCacheHeaders(false)
             .build()
     }
 
