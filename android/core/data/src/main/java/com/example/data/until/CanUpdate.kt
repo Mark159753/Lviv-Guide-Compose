@@ -14,13 +14,15 @@ class CanUpdateHelperImpl @Inject constructor (
     private val dispatcher: CoroutineDispatcher
 ): CanUpdateHelper {
 
-    private val inspireTime:Date
-        get() = Date(System.currentTimeMillis() + UPDATE_TIME)
+    private val dateNow:Date
+        get() = Date(System.currentTimeMillis())
 
     override suspend fun canUpdate(key:String):Boolean{
         return withContext(dispatcher){
             updateDao.getItemById(key)?.let { lastUpdate ->
-                Date(lastUpdate.time).after(inspireTime)
+                val timeDifference = dateNow.time - lastUpdate.time
+
+                timeDifference > WAITE_TIME
             } ?: true
         }
     }
@@ -45,6 +47,6 @@ class CanUpdateHelperImpl @Inject constructor (
     }
 
     companion object{
-        private const val UPDATE_TIME = 60 * 60 * 1000 // 1 hour
+        private const val WAITE_TIME = 60 * 60 * 1000 // 1 hour
     }
 }
