@@ -1,0 +1,76 @@
+query AllCategoriesQuery{
+    categories {
+        id,
+        name
+    }
+}
+
+query AllPlaces{
+    places {
+        id,
+        title,
+        description,
+        headImage,
+        rating,
+        address,
+        category {
+            id
+            name
+        },
+        location {
+            lat,
+            lon
+        }
+    }
+}
+
+mutation CreatePlace($input: CreatePlaceInput!){
+    createPlace(createPlaceInput: $input){
+        id,
+        title,
+        description,
+        headImage,
+        rating,
+        address,
+        category {
+            id
+            name
+        },
+        location {
+            lat,
+            lon
+        }
+    }
+}
+
+mutation RemovePlace($placeId: Int!){
+    removePlace(id: $placeId){
+        id,
+        title,
+        description,
+        headImage,
+        rating,
+        address,
+        category {
+            id
+            name
+        },
+        location {
+            lat,
+            lon
+        }
+    }
+}
+
+mutation RemoveCategory($categotyId: Int!){
+    removeCategory(id: $categotyId){
+        id
+    }
+}
+
+mutation CreateCategory($input: CreateCategoryInput!){
+    createCategory(createCategoryInput: $input){
+        id,
+        name
+    }
+}
