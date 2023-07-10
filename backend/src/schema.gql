@@ -5,12 +5,19 @@
 type CategoryEntity {
   id: Int!
   name: String!
+  places: [PlaceEntity!]!
 }
 
 type LocationEntity {
   id: Int!
   lat: Float!
   lon: Float!
+}
+
+type ImageEntity {
+  id: Int!
+  path: String!
+  place: PlaceEntity!
 }
 
 type PlaceEntity {
@@ -24,14 +31,17 @@ type PlaceEntity {
   address: String!
   category: CategoryEntity!
   location: LocationEntity!
+  images: [ImageEntity!]!
 }
 
 type Query {
-  findAll: [PlaceEntity!]!
+  places(page: Int = null, size: Int = null, categoryId: Int = null): [PlaceEntity!]!
   category(id: Int!): CategoryEntity!
   locations: [LocationEntity!]!
   location(id: Int!): LocationEntity!
   categories: [CategoryEntity!]!
+  imagesByPlace(placeId: Int!): [ImageEntity!]!
+  image(id: Int!): ImageEntity!
 }
 
 type Mutation {
@@ -41,17 +51,23 @@ type Mutation {
   removeLocation(id: Int!): LocationEntity!
   createCategory(createCategoryInput: CreateCategoryInput!): CategoryEntity!
   removeCategory(id: Int!): CategoryEntity!
+  createImage(createImageInput: CreateImageInput!): ImageEntity!
+  removeImage(id: Int!): ImageEntity!
 }
 
 input CreatePlaceInput {
   title: String!
   description: String!
-  headImage: String!
+  headImage: Upload!
   rating: Float!
   address: String!
   location: CreateLocationInput!
   categoryId: Int!
+  images: [Upload!]!
 }
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 input CreateLocationInput {
   lat: Float!
@@ -60,4 +76,8 @@ input CreateLocationInput {
 
 input CreateCategoryInput {
   name: String!
+}
+
+input CreateImageInput {
+  path: String!
 }

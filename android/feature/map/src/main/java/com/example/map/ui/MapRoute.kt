@@ -81,12 +81,6 @@ private fun MapScreen(
             }
         }
 
-//       GoogleMap(
-//           modifier = Modifier.matchParentSize(),
-//           cameraPositionState = cameraPositionState,
-//           contentPadding = contentPadding
-//       )
-
         MapSwitchButton(
             modifier = Modifier
                 .statusBarsPadding()

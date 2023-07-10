@@ -7,6 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkerParameters
+import com.example.core.common.model.refresh.RefreshResult
 import com.example.core.common.model.response.ResultWrapper
 import com.example.data.repository.local_news.LocalNewsRepository
 import com.example.workers.helper.syncWorkersConstraints
@@ -22,8 +23,8 @@ class SyncNewsWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return when(val res = localNewsRepository.refreshLocalNews()){
-            is ResultWrapper.Error -> Result.failure()
-            is ResultWrapper.Success -> Result.success()
+            is RefreshResult.Error -> Result.failure()
+            RefreshResult.Success -> Result.success()
         }
     }
 

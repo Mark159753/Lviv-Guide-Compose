@@ -3,12 +3,15 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CategoryEntity } from './category.entity';
 import { BaseEntity } from './base.entity';
 import { LocationEntity } from './location.entity';
+import { ImageEntity } from './image.entity';
 
 @ObjectType()
 @Entity({ name: 'places' })
@@ -38,7 +41,7 @@ export class PlaceEntity extends BaseEntity {
   headImage: string;
 
   @Field((type) => Float)
-  @Column()
+  @Column('decimal')
   rating: number;
 
   @Field()
@@ -47,11 +50,17 @@ export class PlaceEntity extends BaseEntity {
 
   @Field((type) => CategoryEntity)
   @JoinColumn({ name: 'categoryId' })
-  @OneToOne(() => CategoryEntity)
+  @ManyToOne(() => CategoryEntity, (category) => category.places, {
+    onDelete: 'CASCADE',
+  })
   category: CategoryEntity;
 
   @Field((type) => LocationEntity)
   @JoinColumn({ name: 'locationId' })
   @OneToOne(() => LocationEntity)
   location: LocationEntity;
+
+  @Field(() => [ImageEntity])
+  @OneToMany(() => ImageEntity, (image) => image.place)
+  images: ImageEntity[];
 }

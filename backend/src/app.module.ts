@@ -8,6 +8,8 @@ import { join } from 'path';
 import { PlacesModule } from './places/places.module';
 import { CategoriesModule } from './categories/categories.module';
 import { LocationModule } from './location/location.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { ImagesModule } from './images/images.module';
 
 @Module({
   imports: [
@@ -21,9 +23,14 @@ import { LocationModule } from './location/location.module';
       inject: [ConfigService],
       useFactory: typeOrmConfig,
     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads/'),
+      serveRoot: '/uploads',
+    }),
     PlacesModule,
     CategoriesModule,
     LocationModule,
+    ImagesModule,
   ],
 })
 export class AppModule {}

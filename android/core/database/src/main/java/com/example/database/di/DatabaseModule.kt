@@ -3,7 +3,10 @@ package com.example.database.di
 import android.content.Context
 import androidx.room.Room
 import com.example.database.LocalDb
+import com.example.database.dao.CategoryDao
 import com.example.database.dao.LocalNewsDao
+import com.example.database.dao.PlacesDao
+import com.example.database.dao.UpdateTimeDao
 import com.example.database.dao.WeatherDao
 import dagger.Module
 import dagger.Provides
@@ -29,5 +32,14 @@ object DatabaseModule {
 
     @Provides
     fun provideLocalNewsDao(db: LocalDb): LocalNewsDao = db.getLocalNewsDao()
+
+    @Provides
+    fun provideCategoryDao(db: LocalDb): CategoryDao = db.getCategoriesDao()
+
+    @Provides
+    fun providePlacesDao(db: LocalDb): PlacesDao = db.getPlacesDao()
+
+    @Provides
+    fun provideUpdateTimeDao(db: LocalDb): UpdateTimeDao = db.getUpdateTimeDao()
 
 }

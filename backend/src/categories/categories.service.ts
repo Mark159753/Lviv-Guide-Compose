@@ -25,7 +25,11 @@ export class CategoriesService {
     return this.categoriesRepository.findOneByOrFail({ id: id });
   }
 
-  remove(id: number) {
-    return this.categoriesRepository.delete({ id: id });
+  async remove(id: number) {
+    const old = await this.categoriesRepository.findOneOrFail({
+      where: { id: id },
+    });
+    await this.categoriesRepository.delete({ id: id });
+    return old;
   }
 }

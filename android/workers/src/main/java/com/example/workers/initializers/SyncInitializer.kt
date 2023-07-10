@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.example.workers.SyncCategoriesWorker
 import com.example.workers.SyncNewsWorker
+import com.example.workers.SyncPlacesWorker
 import com.example.workers.SyncWeatherWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +38,9 @@ class SyncWorkersInitializer @Inject constructor(
                 ExistingWorkPolicy.KEEP,
                 listOf(
                     SyncWeatherWorker.createWorker(),
-                    SyncNewsWorker.createWorker()
+                    SyncNewsWorker.createWorker(),
+                    SyncCategoriesWorker.createWorker(),
+                    SyncPlacesWorker.createWorker()
                 ),
             )
         }

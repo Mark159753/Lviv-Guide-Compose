@@ -5,4 +5,5 @@
     <string name="home_screen_last_news_title">Latest news</string>
     <string name="home_screen_places_to_explore_title">Places to explore</string>
     <string name="home_screen_search_hint_title">Search places</string>
+    <string name="home_screen_tabs_categories_all">All</string>
 </resources>

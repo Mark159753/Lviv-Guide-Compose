@@ -5,6 +5,10 @@ plugins {
     id 'kotlin-kapt'
 }
 
+def apikeyPropertiesFile = rootProject.file("local.properties")
+def apikeyProperties = new Properties()
+apikeyProperties.load(new FileInputStream(apikeyPropertiesFile))
+
 android {
     namespace 'com.example.core.common'
     compileSdk rootProject.ext.compileSdkVersion
@@ -13,6 +17,9 @@ android {
         minSdk rootProject.ext.minSdkVersion
         targetSdk rootProject.ext.targetSdkVersion
 
+        buildConfigField("String", "BASE_URL", apikeyProperties['BASE_URL'])
+        buildConfigField("String", "BASE_GRAPTHQL_URL", apikeyProperties['BASE_GRAPTHQL_URL'])
+        buildConfigField("String", "WEATHER_API_KEY", apikeyProperties['WEATHER_API_KEY'])
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }

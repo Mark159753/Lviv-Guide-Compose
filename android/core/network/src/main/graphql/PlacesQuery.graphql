@@ -1,0 +1,20 @@
+query FetchPlacesWithFilters($page: Int = null, $size: Int = null, $categoryId: Int = null){
+    places(page: $page, size: $size, categoryId: $categoryId){
+        ...mainPlaceInfo
+    }
+}
+
+fragment mainPlaceInfo on PlaceEntity{
+    id,
+    title,
+    headImage,
+    location {
+        lat,
+        lon
+    },
+    rating,
+    category {
+        id,
+        name
+    }
+}

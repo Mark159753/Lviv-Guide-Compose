@@ -136,7 +136,7 @@ fun ScrollablePlacesTabsRow(
                 }
 
                 var xPos = 0
-                val h = placeables.maxOf { it.height }
+                val h = placeables.maxOfOrNull { it.height } ?: 0
                 val maxW = placeables.sumOf { (it.width + divider) } - divider
                 val w = min(maxW, constraints.maxWidth)
 

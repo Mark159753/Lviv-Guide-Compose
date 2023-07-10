@@ -14,6 +14,9 @@ import { LocationService } from '../location/location.service';
 import { LocationEntity } from '../typeorm/entities/location.entity';
 import { CategoryEntity } from '../typeorm/entities/category.entity';
 import { CategoriesService } from '../categories/categories.service';
+import { ImageEntity } from '../typeorm/entities/image.entity';
+import { ImagesService } from '../images/images.service';
+import { FetchPlacesArgs } from "./dto/fetch-places.args";
 
 @Resolver((of) => PlaceEntity)
 export class PlacesResolver {
@@ -21,16 +24,19 @@ export class PlacesResolver {
     private readonly placesService: PlacesService,
     private readonly locationService: LocationService,
     private readonly categoriesService: CategoriesService,
+    private readonly imagesService: ImagesService,
   ) {}
 
   @Mutation(() => PlaceEntity)
-  createPlace(@Args('createPlaceInput') createPlaceInput: CreatePlaceInput) {
+  async createPlace(
+    @Args('createPlaceInput') createPlaceInput: CreatePlaceInput,
+  ) {
     return this.placesService.create(createPlaceInput);
   }
 
-  @Query((returns) => [PlaceEntity])
-  findAll(): Promise<PlaceEntity[]> {
-    return this.placesService.findAll();
+  @Query((returns) => [PlaceEntity], { name: 'places' })
+  findAll(@Args() args: FetchPlacesArgs): Promise<PlaceEntity[]> {
+    return this.placesService.findAll(args);
   }
 
   @Query(() => PlaceEntity, { name: 'category' })
@@ -51,5 +57,10 @@ export class PlacesResolver {
   @ResolveField(() => CategoryEntity)
   async category(@Parent() place: PlaceEntity): Promise<CategoryEntity> {
     return await this.categoriesService.findOne(place.categoryId);
+  }
+
+  @ResolveField(() => [ImageEntity])
+  async images(@Parent() place: PlaceEntity): Promise<ImageEntity[]> {
+    return await this.imagesService.findByPlace(place.id);
   }
 }

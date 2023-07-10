@@ -1,10 +1,10 @@
 package com.example.feature.home.ui
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,9 +17,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,10 +42,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.data.model.CategoryModel
 import com.example.data.model.LocalNewsModel
+import com.example.data.model.PlaceModel
 import com.example.data.model.WeatherModel
 import com.example.feature.home.R
 import com.example.ui.components.NestedScrollColumn
@@ -49,8 +56,14 @@ import com.example.ui.components.ScrollablePlacesTabsRow
 import com.example.ui.components.TabItem
 import com.example.ui.components.rememberNestedScrollState
 import com.example.ui.components.rememberTabsState
+import com.example.ui.theme.bgColors
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.fade
+import com.google.accompanist.placeholder.placeholder
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeRoute(
@@ -60,7 +73,10 @@ fun HomeRoute(
     HomeScreen(
         contentPadding = contentPadding,
         weather = viewModel.weather,
-        localNews = viewModel.localNews
+        localNews = viewModel.localNews,
+        places = viewModel.places,
+        tabs = viewModel.categories,
+        onCategoryChange = viewModel::selectCategory
     )
 }
 
@@ -68,12 +84,19 @@ fun HomeRoute(
 private fun HomeScreen(
     contentPadding: PaddingValues = PaddingValues(),
     weather: Flow<WeatherModel> = flowOf(),
-    localNews: Flow<List<LocalNewsModel?>> = flowOf()
+    localNews: Flow<List<LocalNewsModel?>> = flowOf(),
+    places: Flow<List<PlaceModel?>> = flowOf(),
+    tabs:Flow<List<CategoryModel>> = flowOf(),
+    onCategoryChange: (categoryId: Int?) -> Unit = {},
 ){
 
     val nestedScrollState = rememberNestedScrollState()
 
     val isSticky = nestedScrollState.isMaxOffsetReached
+
+    val placesListState = rememberLazyStaggeredGridState()
+
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -86,13 +109,23 @@ private fun HomeScreen(
                 Header(
                     isSticky = isSticky,
                     weather = weather,
-                    localNews = localNews
+                    localNews = localNews,
+                    tabs = tabs,
+                    onCategoryChange = { id ->
+                        onCategoryChange(id)
+                        scope.launch {
+                            delay(300)
+                            placesListState.scrollToItem(0)
+                        }
+                    }
                 )
             },
             lazyColumn = {
                 PlacesList(
                     modifier = Modifier,
-                    contentPadding = contentPadding
+                    contentPadding = contentPadding,
+                    places = places,
+                    listState = placesListState
                 )
             },
             stickyHeaderHeight = 80.dp
@@ -117,7 +150,9 @@ private fun Header(
     modifier: Modifier = Modifier,
     isSticky:Boolean = false,
     weather: Flow<WeatherModel> = flowOf(),
-    localNews: Flow<List<LocalNewsModel?>>
+    localNews: Flow<List<LocalNewsModel?>>,
+    tabs:Flow<List<CategoryModel>> = flowOf(),
+    onCategoryChange:(categoryId:Int?)->Unit = {}
 ){
 
     val weatherState by weather.collectAsStateWithLifecycle(initialValue = null)
@@ -192,7 +227,8 @@ private fun Header(
 
         TabsPlaces(
             isSticky = isSticky,
-            onClick = {}
+            onClick = onCategoryChange,
+            tabs = tabs
         )
 
     }
@@ -223,8 +259,11 @@ private fun SearchStub(
 private fun TabsPlaces(
     modifier: Modifier = Modifier,
     isSticky: Boolean = false,
-    onClick:(index:Int)->Unit
+    onClick:(categoryId:Int?)->Unit,
+    tabs:Flow<List<CategoryModel?>> = flowOf()
 ){
+
+    val tabsAsState by tabs.collectAsStateWithLifecycle(initialValue = arrayOfNulls<CategoryModel?>(5).toList())
 
     val tabState = rememberTabsState(selectedPosition = 0)
 
@@ -232,7 +271,8 @@ private fun TabsPlaces(
 
     Surface(
         modifier = modifier
-        .shadow(elevation)
+            .fillMaxWidth()
+            .shadow(elevation)
     ) {
 
         ScrollablePlacesTabsRow(
@@ -241,21 +281,60 @@ private fun TabsPlaces(
                 .padding(vertical = 12.dp),
             state = tabState,
             content = {
-                Tabs.values().forEachIndexed { index, tab ->
+                
+                val isLoading = tabsAsState.any { it == null }
+                
+                TabItem(
+                    modifier = Modifier
+                        .placeholder(
+                            visible = isLoading,
+                            color = bgColors.random(),
+                            highlight = PlaceholderHighlight.fade(),
+                            shape = RoundedCornerShape(100)
+                        ),
+                    onClick = {
+                        if (isLoading) return@TabItem
+                        tabState.selectedPosition = 0
+                        onClick(null)
+                    }
+                ) {
+                    val isSelected = remember {
+                        derivedStateOf { tabState.selectedPosition == 0 }
+                    }
+                    val textColor =
+                        animateColorAsState(if (isSelected.value) Color.White else MaterialTheme.colorScheme.onSurfaceVariant)
+
+                    Text(
+                        text = stringResource(id = R.string.home_screen_tabs_categories_all),
+                        color = textColor.value
+                    )
+                }
+                
+                tabsAsState.forEachIndexed { index, categoryModel ->
+                    val position = index + 1
                     TabItem(
+                        modifier = Modifier
+                            .width(if (categoryModel == null) 100.dp else Dp.Unspecified)
+                            .placeholder(
+                                visible = categoryModel == null,
+                                color = bgColors.random(),
+                                highlight = PlaceholderHighlight.fade(),
+                                shape = RoundedCornerShape(100)
+                            ),
                         onClick = {
-                            tabState.selectedPosition = index
-                            onClick(index)
+                            if (categoryModel == null) return@TabItem
+                            tabState.selectedPosition = position
+                            onClick(categoryModel.id)
                         }
                     ) {
                         val isSelected = remember {
-                            derivedStateOf { tabState.selectedPosition == index }
+                            derivedStateOf { tabState.selectedPosition == position }
                         }
                         val textColor =
                             animateColorAsState(if (isSelected.value) Color.White else MaterialTheme.colorScheme.onSurfaceVariant)
 
                         Text(
-                            text = tab.name,
+                            text = categoryModel?.name ?: "",
                             color = textColor.value
                         )
                     }
@@ -273,25 +352,33 @@ private fun TabsPlaces(
     }
 }
 
-enum class Tabs{
-    All, Museum, Places, Theaters, Restorants, Parks
-}
-
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PlacesList(
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues()
+    contentPadding: PaddingValues = PaddingValues(),
+    places: Flow<List<PlaceModel?>> = flowOf(),
+    listState: LazyStaggeredGridState = rememberLazyStaggeredGridState()
 ){
+
+    val placesAsState by places.collectAsStateWithLifecycle(initialValue = arrayOfNulls<PlaceModel?>(10).toList())
+
     LazyVerticalStaggeredGrid(
+        state = listState,
         columns = StaggeredGridCells.Adaptive(160.dp),
         verticalItemSpacing = 16.dp,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = (contentPadding.calculateBottomPadding() + 16.dp)),
         content = {
             items(
-                count = 20
-            ){
-                PlaceItem()
+                count = placesAsState.size,
+                key = if (placesAsState.firstOrNull() == null) null else { index -> placesAsState[index]!!.id }
+            ){ index ->
+                val dataItem = placesAsState.getOrNull(index)
+                PlaceItem(
+                    item = dataItem,
+                    modifier = Modifier.animateItemPlacement()
+                )
             }
         },
         modifier = modifier.fillMaxSize(),

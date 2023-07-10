@@ -1,9 +1,15 @@
 package com.example.data.di
 
+import com.example.data.repository.categories.CategoriesRepository
+import com.example.data.repository.categories.CategoriesRepositoryImpl
 import com.example.data.repository.local_news.LocalNewsRepository
 import com.example.data.repository.local_news.LocalNewsRepositoryImpl
+import com.example.data.repository.places.PlacesRepository
+import com.example.data.repository.places.PlacesRepositoryImpl
 import com.example.data.repository.weather.WeatherRepository
 import com.example.data.repository.weather.WeatherRepositoryImpl
+import com.example.data.until.CanUpdateHelper
+import com.example.data.until.CanUpdateHelperImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -14,6 +20,11 @@ import dagger.hilt.components.SingletonComponent
 abstract class RepositoryModule {
 
     @Binds
+    abstract fun bindCanUpdateHelper(
+        helperImpl: CanUpdateHelperImpl
+    ): CanUpdateHelper
+
+    @Binds
     abstract fun bindWeatherRepository(
         repositoryImpl: WeatherRepositoryImpl
     ):WeatherRepository
@@ -22,4 +33,14 @@ abstract class RepositoryModule {
     abstract fun bindLocalNewsRepository(
         repositoryImpl: LocalNewsRepositoryImpl
     ): LocalNewsRepository
+
+    @Binds
+    abstract fun bindCategoriesRepository(
+        repositoryImpl: CategoriesRepositoryImpl
+    ): CategoriesRepository
+
+    @Binds
+    abstract fun bindPlacesRepository(
+        repositoryImpl: PlacesRepositoryImpl
+    ): PlacesRepository
 }

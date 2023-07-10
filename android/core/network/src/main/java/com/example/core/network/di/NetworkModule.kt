@@ -1,5 +1,7 @@
 package com.example.core.network.di
 
+import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.network.okHttpClient
 import com.example.core.common.di.IoDispatcher
 import com.example.core.network.ApiService
 import com.example.core.network.BuildConfig
@@ -54,6 +56,15 @@ object NetworkModule {
             .client(client)
             .build()
             .create(ApiService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideApolloClient(client: OkHttpClient): ApolloClient {
+        return ApolloClient.Builder()
+            .serverUrl(BuildConfig.BASE_GRAPTHQL_URL)
+            .okHttpClient(client)
+            .build()
     }
 
     @Provides
