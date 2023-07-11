@@ -1,11 +1,13 @@
 package com.example.feature.home.ui
 
+import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -14,6 +16,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +35,7 @@ import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.imageLoader
 import com.example.core.common.BuildConfig
+import com.example.core.common.exstantion.safeDistanceToFormatted
 import com.example.data.model.PlaceModel
 import com.example.feature.home.R
 import com.example.ui.theme.bgColors
@@ -42,12 +46,18 @@ import com.google.accompanist.placeholder.placeholder
 @Composable
 fun PlaceItem(
     modifier: Modifier = Modifier,
-    item: PlaceModel? = null
+    item: PlaceModel? = null,
+    currentLocation: State<Location?> = mutableStateOf(null)
 ){
+
+    val bgColor = remember {
+        bgColors.random()
+    }
+
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(bgColors.random())
+            .background(bgColor)
             .padding(bottom = 16.dp)
     ){
 
@@ -84,6 +94,7 @@ fun PlaceItem(
         )
 
         if (item != null){
+            Spacer(modifier = Modifier.height(4.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -91,7 +102,10 @@ fun PlaceItem(
             ) {
                 RatingBlock(rating = item.rating.toString())
                 Spacer(modifier = Modifier.width(4.dp))
-                LocationBloc(location = "2 km")
+                LocationBloc(
+                    item = item,
+                    currentLocation = currentLocation
+                )
             }
         }
     }
@@ -124,9 +138,19 @@ private fun RatingBlock(
 
 @Composable
 private fun LocationBloc(
-    location:String,
-    modifier: Modifier = Modifier
+    item: PlaceModel,
+    modifier: Modifier = Modifier,
+    currentLocation: State<Location?> = mutableStateOf(null)
 ){
+    val context = LocalContext.current
+    val distance by remember(currentLocation) {
+        mutableStateOf(currentLocation.value.safeDistanceToFormatted(
+            lat = item.lat,
+            lon = item.lon,
+            context = context,
+        ))
+    }
+
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
@@ -140,7 +164,7 @@ private fun LocationBloc(
             tint = Color.Black
         )
         Text(
-            text = location,
+            text = distance,
             color = Color.Black,
             style = MaterialTheme.typography.bodySmall
         )

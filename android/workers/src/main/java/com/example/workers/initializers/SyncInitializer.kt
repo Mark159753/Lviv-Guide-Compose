@@ -1,6 +1,7 @@
 package com.example.workers.initializers
 
 import android.content.Context
+import android.util.Log
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -23,13 +24,19 @@ class SyncWorkersInitializer @Inject constructor(
                 if (workInfo.isEmpty()) return@map WorkerStatus.None
                 when{
                     workInfo.any { it.state == WorkInfo.State.RUNNING } -> WorkerStatus.Running
-                    workInfo.any { it.state == WorkInfo.State.FAILED } -> WorkerStatus.Error()
+                    workInfo.any { it.state == WorkInfo.State.FAILED } -> onError(workInfo)
                     workInfo.all { it.state == WorkInfo.State.SUCCEEDED } -> WorkerStatus.Success
                     else -> WorkerStatus.None
                 }
             }
             .conflate()
 
+
+    private fun onError(workInfo:List<WorkInfo>): WorkerStatus.Error {
+        val info = workInfo.firstOrNull { it.state == WorkInfo.State.FAILED }
+        val error = info?.outputData?.getString(SyncError)
+        return WorkerStatus.Error(msg = error)
+    }
 
     override fun runWorker() {
         WorkManager.getInstance(context).apply {
@@ -48,3 +55,4 @@ class SyncWorkersInitializer @Inject constructor(
 }
 
 const val SyncWorkersName = "com.example.workers.initializers.SyncWorkersName"
+const val SyncError = "com.example.workers.initializers.SyncError"

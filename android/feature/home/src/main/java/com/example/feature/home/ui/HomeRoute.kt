@@ -1,5 +1,6 @@
 package com.example.feature.home.ui
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -29,10 +30,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,51 +45,65 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.CategoryModel
-import com.example.data.model.LocalNewsModel
-import com.example.data.model.PlaceModel
-import com.example.data.model.WeatherModel
 import com.example.feature.home.R
+import com.example.feature.home.ui.state.HeaderState
+import com.example.feature.home.ui.state.HomeState
+import com.example.feature.home.ui.state.PlacesListState
 import com.example.ui.components.NestedScrollColumn
 import com.example.ui.components.ScrollablePlacesTabsRow
 import com.example.ui.components.TabItem
 import com.example.ui.components.rememberNestedScrollState
 import com.example.ui.components.rememberTabsState
+import com.example.ui.permissions.rememberLocationPermissions
 import com.example.ui.theme.bgColors
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.fade
 import com.google.accompanist.placeholder.placeholder
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HomeRoute(
     contentPadding: PaddingValues,
     viewModel:HomeViewModel = hiltViewModel()
 ){
+
+    val locationPermission = rememberLocationPermissions()
+
+    LaunchedEffect(key1 = Unit ){
+        if (!locationPermission.allPermissionsGranted)
+            locationPermission.launchMultiplePermissionRequest()
+
+        snapshotFlow { locationPermission.allPermissionsGranted }
+            .distinctUntilChanged()
+            .collectLatest { isGranted ->
+                if (isGranted)
+                    viewModel.requestCurrentLocation()
+            }
+    }
+
+
     HomeScreen(
         contentPadding = contentPadding,
-        weather = viewModel.weather,
-        localNews = viewModel.localNews,
-        places = viewModel.places,
-        tabs = viewModel.categories,
-        onCategoryChange = viewModel::selectCategory
+        homeState = viewModel.uiState,
+        onCategoryChange = viewModel::selectCategory,
     )
 }
 
 @Composable
 private fun HomeScreen(
     contentPadding: PaddingValues = PaddingValues(),
-    weather: Flow<WeatherModel> = flowOf(),
-    localNews: Flow<List<LocalNewsModel?>> = flowOf(),
-    places: Flow<List<PlaceModel?>> = flowOf(),
-    tabs:Flow<List<CategoryModel>> = flowOf(),
+    homeState: HomeState = HomeState(),
     onCategoryChange: (categoryId: Int?) -> Unit = {},
 ){
 
@@ -108,9 +125,7 @@ private fun HomeScreen(
             header = {
                 Header(
                     isSticky = isSticky,
-                    weather = weather,
-                    localNews = localNews,
-                    tabs = tabs,
+                    headerState = homeState.header,
                     onCategoryChange = { id ->
                         onCategoryChange(id)
                         scope.launch {
@@ -124,8 +139,8 @@ private fun HomeScreen(
                 PlacesList(
                     modifier = Modifier,
                     contentPadding = contentPadding,
-                    places = places,
-                    listState = placesListState
+                    listState = placesListState,
+                    placesState = homeState.placesListState
                 )
             },
             stickyHeaderHeight = 80.dp
@@ -149,14 +164,12 @@ private fun HomeScreen(
 private fun Header(
     modifier: Modifier = Modifier,
     isSticky:Boolean = false,
-    weather: Flow<WeatherModel> = flowOf(),
-    localNews: Flow<List<LocalNewsModel?>>,
-    tabs:Flow<List<CategoryModel>> = flowOf(),
+    headerState: HeaderState = HeaderState(),
     onCategoryChange:(categoryId:Int?)->Unit = {}
 ){
 
-    val weatherState by weather.collectAsStateWithLifecycle(initialValue = null)
-    val localNewsState by localNews.collectAsStateWithLifecycle(initialValue = arrayOfNulls<LocalNewsModel>(10).toList())
+    val weatherState by headerState.weather.collectAsStateWithLifecycle()
+    val localNewsState by headerState.localNews.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
@@ -228,7 +241,7 @@ private fun Header(
         TabsPlaces(
             isSticky = isSticky,
             onClick = onCategoryChange,
-            tabs = tabs
+            tabs = headerState.tabs
         )
 
     }
@@ -260,10 +273,10 @@ private fun TabsPlaces(
     modifier: Modifier = Modifier,
     isSticky: Boolean = false,
     onClick:(categoryId:Int?)->Unit,
-    tabs:Flow<List<CategoryModel?>> = flowOf()
+    tabs: StateFlow<List<CategoryModel?>> = MutableStateFlow(List(5){ null })
 ){
 
-    val tabsAsState by tabs.collectAsStateWithLifecycle(initialValue = arrayOfNulls<CategoryModel?>(5).toList())
+    val tabsAsState by tabs.collectAsStateWithLifecycle()
 
     val tabState = rememberTabsState(selectedPosition = 0)
 
@@ -314,7 +327,9 @@ private fun TabsPlaces(
                     val position = index + 1
                     TabItem(
                         modifier = Modifier
-                            .width(if (categoryModel == null) 100.dp else Dp.Unspecified)
+                            .then(
+                                if (categoryModel == null) Modifier.width(100.dp) else Modifier
+                            )
                             .placeholder(
                                 visible = categoryModel == null,
                                 color = bgColors.random(),
@@ -357,11 +372,11 @@ private fun TabsPlaces(
 private fun PlacesList(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
-    places: Flow<List<PlaceModel?>> = flowOf(),
-    listState: LazyStaggeredGridState = rememberLazyStaggeredGridState()
+    listState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
+    placesState: PlacesListState = PlacesListState()
 ){
 
-    val placesAsState by places.collectAsStateWithLifecycle(initialValue = arrayOfNulls<PlaceModel?>(10).toList())
+    val placesAsState by placesState.places.collectAsStateWithLifecycle()
 
     LazyVerticalStaggeredGrid(
         state = listState,
@@ -377,7 +392,8 @@ private fun PlacesList(
                 val dataItem = placesAsState.getOrNull(index)
                 PlaceItem(
                     item = dataItem,
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier.animateItemPlacement(),
+                    currentLocation = placesState.currentLocation
                 )
             }
         },

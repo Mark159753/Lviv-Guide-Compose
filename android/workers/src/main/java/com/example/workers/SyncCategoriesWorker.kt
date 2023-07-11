@@ -7,9 +7,11 @@ import androidx.work.CoroutineWorker
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.example.core.common.model.refresh.RefreshResult
 import com.example.data.repository.categories.CategoriesRepository
 import com.example.workers.helper.syncWorkersConstraints
+import com.example.workers.initializers.SyncError
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -21,8 +23,10 @@ class SyncCategoriesWorker @AssistedInject constructor(
 ): CoroutineWorker(appContext, workerParams){
 
     override suspend fun doWork(): Result {
-        return when(categoriesRepository.refreshCategories()){
-            is RefreshResult.Error -> Result.failure()
+        return when(val res = categoriesRepository.refreshCategories()){
+            is RefreshResult.Error -> Result.failure(
+                workDataOf(SyncError to (res.msg ?: res.throwable?.message))
+            )
             RefreshResult.Success -> Result.success()
         }
     }

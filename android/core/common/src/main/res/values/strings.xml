@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="location_meters_value">%1$s m.</string>
+    <string name="location_kilometers_value">%1$s km.</string>
+    <string name="location_unspecified_value">~</string>
+</resources>
