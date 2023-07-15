@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="place_details_gallery_title">Gallery</string>
+    <string name="place_details_about_title">About</string>
+</resources>

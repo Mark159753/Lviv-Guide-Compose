@@ -16,13 +16,15 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.homeScreen(
-    contentPadding: PaddingValues = PaddingValues()
+    contentPadding: PaddingValues = PaddingValues(),
+    onPlaceClick:(id:Int, color:Int) -> Unit = {_,_ ->}
 ) {
     composable(
         route = HomeNavigationRoute,
     ) {
         HomeRoute(
             contentPadding = contentPadding,
+            onPlaceClick = onPlaceClick
         )
     }
 }

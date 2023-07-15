@@ -2,11 +2,13 @@ package com.example.data.repository.places
 
 import androidx.room.withTransaction
 import com.apollographql.apollo3.ApolloClient
+import com.example.FetchPlaceDetailsQuery
 import com.example.FetchPlacesWithFiltersQuery
 import com.example.core.common.di.IoDispatcher
 import com.example.core.common.model.refresh.RefreshResult
 import com.example.core.common.model.response.ResultWrapper
 import com.example.core.common.model.response.toRefreshState
+import com.example.data.model.PlaceDetailsModel
 import com.example.data.model.PlaceModel
 import com.example.data.model.toCategoryEntity
 import com.example.data.model.toEntity
@@ -60,6 +62,15 @@ class PlacesRepositoryImpl @Inject constructor(
             }
         }else{
             RefreshResult.Success
+        }
+    }
+
+    override suspend fun fetchPlaceDetails(id:Int) = withContext(dispatcher){
+        when(val res = client.query(FetchPlaceDetailsQuery(id)).safeExecute()){
+            is ResultWrapper.Error -> res
+            is ResultWrapper.Success -> {
+                ResultWrapper.Success(res.value.place.toExternal())
+            }
         }
     }
 

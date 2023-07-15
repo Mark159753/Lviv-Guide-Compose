@@ -52,6 +52,12 @@ class NestedScrollState(
     val scrollOffset
         get() = dragAnimator.value
 
+    val process:Float
+        get(){
+            val p = (scrollOffset / rangeDifference).coerceIn(0f, 1f)
+            return if (p.isNaN()) 0f else p
+        }
+
     val isMaxOffsetReached by derivedStateOf { if (dragAnimator.value == 0f) false else dragAnimator.value <= (-minHeight.toFloat()) }
 
     internal suspend fun snapTo(value:Float) {
@@ -157,7 +163,7 @@ private fun NestedScrollColumnLayout(
 @Composable
 fun NestedScrollColumn(
     header: @Composable ()->Unit,
-    lazyColumn: @Composable ()->Unit,
+    scrolableContent: @Composable ()->Unit,
     modifier: Modifier = Modifier,
     stickyHeaderHeight:Dp = 0.dp,
     state:NestedScrollState = rememberNestedScrollState()
@@ -202,7 +208,7 @@ fun NestedScrollColumn(
                 .fillMaxWidth()
                 .offset { IntOffset(x = 0, y = state.scrollOffset.toInt()) }
         ) {
-            lazyColumn()
+            scrolableContent()
         }
     }
 }

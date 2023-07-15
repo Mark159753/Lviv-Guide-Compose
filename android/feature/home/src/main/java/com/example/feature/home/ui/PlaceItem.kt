@@ -2,6 +2,7 @@ package com.example.feature.home.ui
 
 import android.location.Location
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -47,7 +49,8 @@ import com.google.accompanist.placeholder.placeholder
 fun PlaceItem(
     modifier: Modifier = Modifier,
     item: PlaceModel? = null,
-    currentLocation: State<Location?> = mutableStateOf(null)
+    currentLocation: State<Location?> = mutableStateOf(null),
+    onItemClick:(id:Int, color:Int) -> Unit = {_,_ ->}
 ){
 
     val bgColor = remember {
@@ -57,6 +60,11 @@ fun PlaceItem(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
+            .clickable {
+                if (item != null){
+                    onItemClick(item.id, bgColor.toArgb())
+                }
+            }
             .background(bgColor)
             .padding(bottom = 16.dp)
     ){
@@ -143,7 +151,7 @@ private fun LocationBloc(
     currentLocation: State<Location?> = mutableStateOf(null)
 ){
     val context = LocalContext.current
-    val distance by remember(currentLocation) {
+    val distance by remember(currentLocation.value) {
         mutableStateOf(currentLocation.value.safeDistanceToFormatted(
             lat = item.lat,
             lon = item.lon,

@@ -36,10 +36,11 @@ type PlaceEntity {
 
 type Query {
   places(page: Int = null, size: Int = null, categoryId: Int = null): [PlaceEntity!]!
-  category(id: Int!): CategoryEntity!
+  place(id: Int!): PlaceEntity!
   locations: [LocationEntity!]!
   location(id: Int!): LocationEntity!
   categories: [CategoryEntity!]!
+  category(id: Int!): CategoryEntity!
   imagesByPlace(placeId: Int!): [ImageEntity!]!
   image(id: Int!): ImageEntity!
 }

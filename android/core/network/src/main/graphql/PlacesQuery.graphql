@@ -4,6 +4,17 @@ query FetchPlacesWithFilters($page: Int = null, $size: Int = null, $categoryId: 
     }
 }
 
+query FetchPlaceDetails($id: Int!){
+    place(id: $id){
+        ...mainPlaceInfo,
+        address,
+        description,
+        images {
+            path
+        }
+    }
+}
+
 fragment mainPlaceInfo on PlaceEntity{
     id,
     title,

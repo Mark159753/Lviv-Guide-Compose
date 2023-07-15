@@ -39,7 +39,7 @@ export class PlacesResolver {
     return this.placesService.findAll(args);
   }
 
-  @Query(() => PlaceEntity, { name: 'category' })
+  @Query(() => PlaceEntity, { name: 'place' })
   findOne(@Args('id', { type: () => Int }) id: number) {
     return this.placesService.findOne(id);
   }

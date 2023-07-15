@@ -1,5 +1,10 @@
 package com.example.lvivguide.ui
 
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
@@ -29,11 +34,29 @@ fun LvivGuideApp(
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            BottomNavBar(
-                destinations = appState.bottomBarDestinations,
-                onNavigateToDestination = appState::navigateToBottomBarDestination,
-                currentDestination = appState.currentDestination
-            )
+            val isVisible = appState.currentBottomBarDestination != null
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = slideInVertically(
+                    animationSpec = tween(
+                        durationMillis = 200,
+                    ),
+                    initialOffsetY = { it }
+                ),
+                exit = slideOutVertically(
+                    animationSpec = tween(
+                        delayMillis = 50,
+                        durationMillis = 200,
+                    ),
+                    targetOffsetY = { it }
+                )
+            ) {
+                BottomNavBar(
+                    destinations = appState.bottomBarDestinations,
+                    onNavigateToDestination = appState::navigateToBottomBarDestination,
+                    currentDestination = appState.currentDestination
+                )
+            }
         }
     ) { contentPadding ->
         Column(

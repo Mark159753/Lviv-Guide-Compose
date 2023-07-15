@@ -1,26 +1,20 @@
 plugins {
-    id 'com.android.application'
+    id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.dagger.hilt.android'
     id 'kotlin-kapt'
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
 android {
-    namespace 'com.example.lvivguide'
+    namespace 'com.example.placedetails'
     compileSdk rootProject.ext.compileSdkVersion
 
     defaultConfig {
-        applicationId "com.example.lvivguide"
         minSdk rootProject.ext.minSdkVersion
         targetSdk rootProject.ext.targetSdkVersion
-        versionCode rootProject.ext.versionCode
-        versionName rootProject.ext.versionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary true
-        }
+        consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {
@@ -52,6 +46,8 @@ android {
 dependencies {
 
     implementation "androidx.core:core-ktx:$androidx_core_version"
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
+    implementation "com.google.android.material:material:$material_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_runtime"
     implementation "androidx.activity:activity-compose:$compose_activity"
     implementation platform("androidx.compose:compose-bom:$compose_bom")
@@ -81,13 +77,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-compose:$compose_lifecycle"
 
     implementation(project(":core:common"))
-    implementation(project(":workers"))
-    implementation(project(":core:network"))
-    implementation(project(":core:database"))
-    implementation(project(":feature:home"))
-    implementation(project(":feature:map"))
-    implementation(project(":feature:account"))
-    implementation(project(":feature:PlaceDetails"))
     implementation(project(":core:ui"))
     implementation(project(":core:data"))
 }

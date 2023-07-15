@@ -1,6 +1,5 @@
 package com.example.feature.home.ui
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -75,6 +74,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeRoute(
     contentPadding: PaddingValues,
+    onPlaceClick:(id:Int, color:Int) -> Unit = {_,_ ->},
     viewModel:HomeViewModel = hiltViewModel()
 ){
 
@@ -97,6 +97,7 @@ fun HomeRoute(
         contentPadding = contentPadding,
         homeState = viewModel.uiState,
         onCategoryChange = viewModel::selectCategory,
+        onPlaceClick = onPlaceClick
     )
 }
 
@@ -105,6 +106,7 @@ private fun HomeScreen(
     contentPadding: PaddingValues = PaddingValues(),
     homeState: HomeState = HomeState(),
     onCategoryChange: (categoryId: Int?) -> Unit = {},
+    onPlaceClick:(id:Int, color:Int) -> Unit = {_,_ ->},
 ){
 
     val nestedScrollState = rememberNestedScrollState()
@@ -135,12 +137,13 @@ private fun HomeScreen(
                     }
                 )
             },
-            lazyColumn = {
+            scrolableContent = {
                 PlacesList(
                     modifier = Modifier,
                     contentPadding = contentPadding,
                     listState = placesListState,
-                    placesState = homeState.placesListState
+                    placesState = homeState.placesListState,
+                    onPlaceClick = onPlaceClick
                 )
             },
             stickyHeaderHeight = 80.dp
@@ -373,7 +376,8 @@ private fun PlacesList(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
     listState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
-    placesState: PlacesListState = PlacesListState()
+    placesState: PlacesListState = PlacesListState(),
+    onPlaceClick:(id:Int, color:Int) -> Unit = {_,_ ->}
 ){
 
     val placesAsState by placesState.places.collectAsStateWithLifecycle()
@@ -393,7 +397,8 @@ private fun PlacesList(
                 PlaceItem(
                     item = dataItem,
                     modifier = Modifier.animateItemPlacement(),
-                    currentLocation = placesState.currentLocation
+                    currentLocation = placesState.currentLocation,
+                    onItemClick = onPlaceClick
                 )
             }
         },
