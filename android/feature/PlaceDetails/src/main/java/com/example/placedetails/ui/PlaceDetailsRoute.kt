@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,10 +60,12 @@ import com.example.ui.components.NestedScrollColumn
 import com.example.ui.components.RatingBar
 import com.example.ui.components.ToolbarHeight
 import com.example.ui.components.rememberNestedScrollState
+import com.example.ui.components.ImageViewer
 import com.example.ui.theme.bgColors
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.fade
 import com.google.accompanist.placeholder.placeholder
+import com.mxalbert.sharedelements.SharedElementsRoot
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -94,36 +97,52 @@ private fun PlaceDetailsScreen(
 
     val state by stateFlow.collectAsStateWithLifecycle()
 
-    if (state is PlaceDetailsState.Error){
-        ErrorScreen(
-            msg = (state as PlaceDetailsState.Error).msg,
-            onBackClick = onBackClick
-        )
-    }else{
-        NestedScrollColumn(
-            stickyHeaderHeight = ToolbarHeight + statusBarHeight,
-            state = nestedScrollState,
-            header = {
-                CollapsingToolbar(
-                    title = (state as? PlaceDetailsState.Success)?.data?.title,
-                    image = (state as? PlaceDetailsState.Success)?.data?.headImage,
-                    scrollProvider = { nestedScrollState.scrollOffset.toInt() },
-                    progress = { nestedScrollState.process },
-                    backgroundColor = placeColor,
-                    onBackClick = onBackClick
-                )
-            },
-            scrolableContent = {
-                when(state){
-                    PlaceDetailsState.Loading -> LoadingContent()
-                    is PlaceDetailsState.Success -> LoadedContent(
-                        placeData = (state as PlaceDetailsState.Success).data,
-                        distance = distanceFlow
+    var displayImagePos by rememberSaveable {
+        mutableStateOf<Int?>(null)
+    }
+
+    SharedElementsRoot {
+        if (state is PlaceDetailsState.Error) {
+            ErrorScreen(
+                msg = (state as PlaceDetailsState.Error).msg,
+                onBackClick = onBackClick
+            )
+        } else {
+            NestedScrollColumn(
+                stickyHeaderHeight = ToolbarHeight + statusBarHeight,
+                state = nestedScrollState,
+                header = {
+                    CollapsingToolbar(
+                        title = (state as? PlaceDetailsState.Success)?.data?.title,
+                        image = (state as? PlaceDetailsState.Success)?.data?.headImage,
+                        scrollProvider = { nestedScrollState.scrollOffset.toInt() },
+                        progress = { nestedScrollState.process },
+                        backgroundColor = placeColor,
+                        onBackClick = onBackClick
                     )
-                    else -> {}
+                },
+                scrolableContent = {
+                    when (state) {
+                        PlaceDetailsState.Loading -> LoadingContent()
+                        is PlaceDetailsState.Success -> LoadedContent(
+                            placeData = (state as PlaceDetailsState.Success).data,
+                            distance = distanceFlow,
+                            onDisplayImage = { index -> displayImagePos = index }
+                        )
+
+                        else -> {}
+                    }
                 }
-            }
-        )
+            )
+        }
+
+        if (displayImagePos != null) {
+            ImageViewer(
+                onDismiss = { displayImagePos = null },
+                images = (state as? PlaceDetailsState.Success)?.data?.images ?: emptyList(),
+                initPage = displayImagePos ?: 0
+            )
+        }
     }
 
 }
@@ -131,7 +150,8 @@ private fun PlaceDetailsScreen(
 @Composable
 private fun LoadedContent(
     placeData:PlaceDetailsModel,
-    distance:StateFlow<String> = MutableStateFlow("~")
+    distance:StateFlow<String> = MutableStateFlow("~"),
+    onDisplayImage:(index:Int)->Unit = {}
 ){
     Column(
         modifier = Modifier
@@ -166,7 +186,8 @@ private fun LoadedContent(
             Spacer(modifier = Modifier.height(12.dp))
 
             GalleryList(
-                images = placeData.images
+                images = placeData.images,
+                onItemClick = onDisplayImage
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -347,7 +368,7 @@ private fun Title(
 private fun GalleryList(
     modifier: Modifier = Modifier,
     images:List<String> = emptyList(),
-    onItemClick:(path:String, index:Int)->Unit = {_, _ ->}
+    onItemClick:(index:Int)->Unit = {}
 ){
   LazyRow(
       modifier = modifier,
@@ -363,7 +384,7 @@ private fun GalleryList(
                 source = dataItem,
                 modifier = Modifier
                     .clickable {
-                        onItemClick(dataItem, index)
+                        onItemClick(index)
                     }
             )
         }
@@ -374,7 +395,6 @@ private fun GalleryList(
 private fun ImageItem(
     modifier: Modifier = Modifier,
     source:String,
-    onClick:(path:String)->Unit = {}
 ){
 
     val context = LocalContext.current
@@ -389,11 +409,6 @@ private fun ImageItem(
         modifier = modifier
             .height(110.dp)
             .aspectRatio(1.4f)
-//            .clickable {
-//                if (source.isNotBlank()){
-//                    onClick(source)
-//                }
-//            }
             .placeholder(
                 visible = isLoading,
                 color = bgColors.random(),

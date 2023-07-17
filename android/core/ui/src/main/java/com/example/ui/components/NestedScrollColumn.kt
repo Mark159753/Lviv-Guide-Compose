@@ -28,6 +28,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -135,7 +136,7 @@ private fun NestedScrollColumnLayout(
         val placeables = mutableListOf<Placeable>()
 
         placeables.add(
-            measurables.first().measure(looseConstraints)
+            measurables.first().measure(looseConstraints.copy(maxHeight = Constraints.Infinity))
         )
 
         state.maxHeight = 0
@@ -214,7 +215,7 @@ fun NestedScrollColumn(
 }
 
 @Composable
-fun rememberNestedScrollConnection(
+private fun rememberNestedScrollConnection(
     state:NestedScrollState,
     decay:DecayAnimationSpec<Float>
 ):NestedScrollConnection{

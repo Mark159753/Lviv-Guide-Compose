@@ -40,7 +40,7 @@ fun ErrorScreen(
     ) {
         IconButton(
             modifier = Modifier
-                .padding(top = 12.dp, start = 16.dp),
+                .padding(top = 4.dp, start = 16.dp),
             onClick = onBackClick
         ) {
             Icon(

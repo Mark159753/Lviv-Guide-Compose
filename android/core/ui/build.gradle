@@ -73,6 +73,9 @@ dependencies {
     //Material2
     implementation "androidx.compose.material:material:$compose_material"
 
+    //Zoomable
+    api "net.engawapg.lib:zoomable:1.5.0-beta1"
+
     //Permissions
     api "com.google.accompanist:accompanist-permissions:0.31.5-beta"
 
