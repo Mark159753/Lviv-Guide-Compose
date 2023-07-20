@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -76,6 +77,7 @@ import kotlinx.coroutines.launch
 fun HomeRoute(
     contentPadding: PaddingValues,
     onPlaceClick:(id:Int, color:Int) -> Unit = {_,_ ->},
+    onNavToSearch:()->Unit = {},
     viewModel:HomeViewModel = hiltViewModel()
 ){
 
@@ -98,7 +100,8 @@ fun HomeRoute(
         contentPadding = contentPadding,
         homeState = viewModel.uiState,
         onCategoryChange = viewModel::selectCategory,
-        onPlaceClick = onPlaceClick
+        onPlaceClick = onPlaceClick,
+        onNavToSearch = onNavToSearch
     )
 }
 
@@ -108,6 +111,7 @@ private fun HomeScreen(
     homeState: HomeState = HomeState(),
     onCategoryChange: (categoryId: Int?) -> Unit = {},
     onPlaceClick:(id:Int, color:Int) -> Unit = {_,_ ->},
+    onNavToSearch:()->Unit = {},
 ){
 
     val nestedScrollState = rememberNestedScrollState()
@@ -135,7 +139,8 @@ private fun HomeScreen(
                             delay(300)
                             placesListState.scrollToItem(0)
                         }
-                    }
+                    },
+                    onNavToSearch = onNavToSearch
                 )
             },
             scrolableContent = {
@@ -169,7 +174,8 @@ private fun Header(
     modifier: Modifier = Modifier,
     isSticky:Boolean = false,
     headerState: HeaderState = HeaderState(),
-    onCategoryChange:(categoryId:Int?)->Unit = {}
+    onCategoryChange:(categoryId:Int?)->Unit = {},
+    onNavToSearch:()->Unit = {}
 ){
 
     val weatherState by headerState.weather.collectAsStateWithLifecycle()
@@ -239,7 +245,8 @@ private fun Header(
         SearchStub(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .padding(top = 8.dp)
+                .padding(top = 8.dp),
+            onClick = onNavToSearch
         )
 
         TabsPlaces(
@@ -253,12 +260,14 @@ private fun Header(
 
 @Composable
 private fun SearchStub(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick:()->Unit = {}
 ){
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
+            .clickable { onClick() }
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(vertical = 12.dp, horizontal = 10.dp),
         contentAlignment = Alignment.Center

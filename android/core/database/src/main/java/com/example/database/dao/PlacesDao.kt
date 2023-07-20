@@ -27,6 +27,10 @@ interface PlacesDao {
     @Query("SELECT * FROM places")
     fun getAllFlow(): Flow<List<PlaceEntity>>
 
+    @Transaction
+    @Query("SELECT * FROM places WHERE title LIKE '%' || :q || '%'")
+    suspend fun search(q:String):List<PlaceWithCategory>
+
     @Query("DELETE FROM places")
     suspend fun deleteAllItems()
 }

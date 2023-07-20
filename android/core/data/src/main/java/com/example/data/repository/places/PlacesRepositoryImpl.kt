@@ -8,7 +8,6 @@ import com.example.core.common.di.IoDispatcher
 import com.example.core.common.model.refresh.RefreshResult
 import com.example.core.common.model.response.ResultWrapper
 import com.example.core.common.model.response.toRefreshState
-import com.example.data.model.PlaceDetailsModel
 import com.example.data.model.PlaceModel
 import com.example.data.model.toCategoryEntity
 import com.example.data.model.toEntity
@@ -64,6 +63,10 @@ class PlacesRepositoryImpl @Inject constructor(
             RefreshResult.Success
         }
     }
+
+    override suspend fun search(q:String) = withContext(dispatcher){
+            placesDao.search(q).map { it.toExternal() }
+        }
 
     override suspend fun fetchPlaceDetails(id:Int) = withContext(dispatcher){
         when(val res = client.query(FetchPlaceDetailsQuery(id)).safeExecute()){

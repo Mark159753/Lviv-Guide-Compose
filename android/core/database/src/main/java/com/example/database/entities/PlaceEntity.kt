@@ -12,5 +12,6 @@ data class PlaceEntity(
     val lat:Double,
     val lon:Double,
     val categoryId:Int,
-    val rating: Float
+    val rating: Float,
+    val description:String
 )

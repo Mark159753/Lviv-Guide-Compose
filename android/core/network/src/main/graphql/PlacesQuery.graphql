@@ -27,5 +27,6 @@ fragment mainPlaceInfo on PlaceEntity{
     category {
         id,
         name
-    }
+    },
+    description
 }

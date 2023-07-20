@@ -1,6 +1,5 @@
 package com.example.data.repository.places
 
-import com.example.FetchPlaceDetailsQuery
 import com.example.core.common.model.refresh.RefreshResult
 import com.example.core.common.model.response.ResultWrapper
 import com.example.data.model.PlaceDetailsModel
@@ -16,4 +15,6 @@ interface PlacesRepository {
     suspend fun refreshPlaces(force:Boolean = false): RefreshResult
 
     suspend fun fetchPlaceDetails(id:Int):ResultWrapper<PlaceDetailsModel>
+
+    suspend fun search(q:String):List<PlaceModel>
 }

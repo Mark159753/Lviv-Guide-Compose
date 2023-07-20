@@ -88,6 +88,7 @@ dependencies {
     implementation(project(":feature:map"))
     implementation(project(":feature:account"))
     implementation(project(":feature:PlaceDetails"))
+    implementation(project(":feature:search"))
     implementation(project(":core:ui"))
     implementation(project(":core:data"))
 }

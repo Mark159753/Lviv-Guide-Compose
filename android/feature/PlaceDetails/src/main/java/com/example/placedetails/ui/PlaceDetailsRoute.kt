@@ -65,7 +65,6 @@ import com.example.ui.theme.bgColors
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.fade
 import com.google.accompanist.placeholder.placeholder
-import com.mxalbert.sharedelements.SharedElementsRoot
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -101,48 +100,46 @@ private fun PlaceDetailsScreen(
         mutableStateOf<Int?>(null)
     }
 
-    SharedElementsRoot {
-        if (state is PlaceDetailsState.Error) {
-            ErrorScreen(
-                msg = (state as PlaceDetailsState.Error).msg,
-                onBackClick = onBackClick
-            )
-        } else {
-            NestedScrollColumn(
-                stickyHeaderHeight = ToolbarHeight + statusBarHeight,
-                state = nestedScrollState,
-                header = {
-                    CollapsingToolbar(
-                        title = (state as? PlaceDetailsState.Success)?.data?.title,
-                        image = (state as? PlaceDetailsState.Success)?.data?.headImage,
-                        scrollProvider = { nestedScrollState.scrollOffset.toInt() },
-                        progress = { nestedScrollState.process },
-                        backgroundColor = placeColor,
-                        onBackClick = onBackClick
+    if (state is PlaceDetailsState.Error) {
+        ErrorScreen(
+            msg = (state as PlaceDetailsState.Error).msg,
+            onBackClick = onBackClick
+        )
+    } else {
+        NestedScrollColumn(
+            stickyHeaderHeight = ToolbarHeight + statusBarHeight,
+            state = nestedScrollState,
+            header = {
+                CollapsingToolbar(
+                    title = (state as? PlaceDetailsState.Success)?.data?.title,
+                    image = (state as? PlaceDetailsState.Success)?.data?.headImage,
+                    scrollProvider = { nestedScrollState.scrollOffset.toInt() },
+                    progress = { nestedScrollState.process },
+                    backgroundColor = placeColor,
+                    onBackClick = onBackClick
+                )
+            },
+            scrolableContent = {
+                when (state) {
+                    PlaceDetailsState.Loading -> LoadingContent()
+                    is PlaceDetailsState.Success -> LoadedContent(
+                        placeData = (state as PlaceDetailsState.Success).data,
+                        distance = distanceFlow,
+                        onDisplayImage = { index -> displayImagePos = index }
                     )
-                },
-                scrolableContent = {
-                    when (state) {
-                        PlaceDetailsState.Loading -> LoadingContent()
-                        is PlaceDetailsState.Success -> LoadedContent(
-                            placeData = (state as PlaceDetailsState.Success).data,
-                            distance = distanceFlow,
-                            onDisplayImage = { index -> displayImagePos = index }
-                        )
 
-                        else -> {}
-                    }
+                    else -> {}
                 }
-            )
-        }
+            }
+        )
+    }
 
-        if (displayImagePos != null) {
-            ImageViewer(
-                onDismiss = { displayImagePos = null },
-                images = (state as? PlaceDetailsState.Success)?.data?.images ?: emptyList(),
-                initPage = displayImagePos ?: 0
-            )
-        }
+    if (displayImagePos != null) {
+        ImageViewer(
+            onDismiss = { displayImagePos = null },
+            images = (state as? PlaceDetailsState.Success)?.data?.images ?: emptyList(),
+            initPage = displayImagePos ?: 0
+        )
     }
 
 }
@@ -155,6 +152,7 @@ private fun LoadedContent(
 ){
     Column(
         modifier = Modifier
+            .background(MaterialTheme.colorScheme.surface)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .navigationBarsPadding(),
@@ -215,6 +213,7 @@ private fun LoadingContent(
     modifier: Modifier = Modifier
 ){
     Column(modifier = modifier
+        .background(MaterialTheme.colorScheme.surface)
         .fillMaxSize()
         .verticalScroll(rememberScrollState())
         .fillMaxWidth()

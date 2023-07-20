@@ -12,6 +12,7 @@ data class PlaceModel(
     val lon:Double,
     val rating:Float,
     val categoryId:Int,
+    val description:String,
     val categoryName:String? = null
 )
 
@@ -22,7 +23,8 @@ fun FetchPlacesWithFiltersQuery.Place.toEntity() = PlaceEntity(
     lat = mainPlaceInfo.location.lat,
     lon = mainPlaceInfo.location.lon,
     categoryId = mainPlaceInfo.category.id,
-    rating = mainPlaceInfo.rating.toFloat()
+    rating = mainPlaceInfo.rating.toFloat(),
+    description = mainPlaceInfo.description
 )
 
 fun PlaceEntity.toExternal() = PlaceModel(
@@ -32,7 +34,8 @@ fun PlaceEntity.toExternal() = PlaceModel(
     lat = lat,
     lon = lon,
     rating = rating,
-    categoryId = categoryId
+    categoryId = categoryId,
+    description = description
 )
 
 fun PlaceWithCategory.toExternal() = PlaceModel(
@@ -43,5 +46,6 @@ fun PlaceWithCategory.toExternal() = PlaceModel(
     lon = place.lon,
     rating = place.rating,
     categoryId = place.categoryId,
-    categoryName = categoryEntity.name
+    categoryName = categoryEntity.name,
+    description = place.description
 )
