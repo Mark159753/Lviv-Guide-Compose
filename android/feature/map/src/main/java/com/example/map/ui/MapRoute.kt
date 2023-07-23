@@ -3,59 +3,54 @@
 package com.example.map.ui
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideIn
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.domain.model.PlaceMarkerModel
 import com.example.ui.components.MapSwitchButton
 import com.example.ui.components.SwitchButtonPosition
 import com.example.ui.components.rememberMapSwitchState
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun MapRoute(
-    contentPadding: PaddingValues = PaddingValues()
+    contentPadding: PaddingValues = PaddingValues(),
+    viewModel:MapViewModel = hiltViewModel()
 ){
     MapScreen(
-        contentPadding = contentPadding
+        contentPadding = contentPadding,
+        markersData = viewModel.markersData
     )
 }
 
 
 @Composable
 private fun MapScreen(
-    contentPadding: PaddingValues = PaddingValues()
+    contentPadding: PaddingValues = PaddingValues(),
+    markersData:StateFlow<List<PlaceMarkerModel>> = MutableStateFlow(emptyList())
 ){
-
-    val lviv = LatLng(49.843296, 24.026427)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(lviv, 13f)
-    }
 
     val switchButtonState = rememberMapSwitchState()
 
@@ -69,10 +64,9 @@ private fun MapScreen(
         ) { state ->
             when(state){
                 SwitchButtonPosition.Map -> {
-                    GoogleMap(
-                        modifier = Modifier.matchParentSize(),
-                        cameraPositionState = cameraPositionState,
-                        contentPadding = contentPadding
+                    MapContent(
+                        contentPadding = contentPadding,
+                        markersData = markersData
                     )
                 }
                 SwitchButtonPosition.Ar -> {
@@ -92,8 +86,42 @@ private fun MapScreen(
 }
 
 @Composable
+private fun MapContent(
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
+    markersData:StateFlow<List<PlaceMarkerModel>> = MutableStateFlow(emptyList())
+){
+
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LvivCoordinates, 13f)
+    }
+
+    val markersDataState by markersData.collectAsStateWithLifecycle()
+
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        GoogleMap(
+            modifier = Modifier.matchParentSize(),
+            cameraPositionState = cameraPositionState,
+            contentPadding = contentPadding,
+        ){
+
+            markersDataState.forEach { data ->
+                Marker(
+                    icon = BitmapDescriptorFactory.fromBitmap(data.markerIcon),
+                    state = rememberMarkerState(position = LatLng(data.place.lat, data.place.lon))
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun ArContent(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ){
     Box(
         modifier = modifier
@@ -102,7 +130,7 @@ fun ArContent(
     )
 }
 
-
+private val LvivCoordinates = LatLng(49.843296, 24.026427)
 
 @Preview
 @Composable
