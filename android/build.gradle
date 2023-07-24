@@ -3,9 +3,9 @@ buildscript {
     ext {
         versionCode = 1
         versionName = "1.0"
-        compileSdkVersion = 33
+        compileSdkVersion = 34
         minSdkVersion = 26
-        targetSdkVersion = 33
+        targetSdkVersion = 34
 
         compose_version = '1.4.4'
         work_version = "2.9.0-alpha01"
@@ -13,6 +13,7 @@ buildscript {
         androidx_core_version = '1.11.0-beta02'
         appcompat_version = '1.6.1'
         material_version = '1.9.0'
+        material3_version = '1.2.0-alpha03'
         junit_version = '4.13.2'
         junit_ext_version = '1.1.5'
         espresso_core_version = '3.5.1'

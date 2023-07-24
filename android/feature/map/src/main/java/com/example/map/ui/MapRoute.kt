@@ -2,6 +2,7 @@
 
 package com.example.map.ui
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -10,9 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.data.model.PlaceModel
 import com.example.domain.model.PlaceMarkerModel
 import com.example.ui.components.MapSwitchButton
 import com.example.ui.components.SwitchButtonPosition
@@ -41,18 +48,43 @@ fun MapRoute(
 ){
     MapScreen(
         contentPadding = contentPadding,
-        markersData = viewModel.markersData
+        markersData = viewModel.markersData,
+        onSelectPlace = viewModel::selectPlace,
+        selectedPlace = viewModel.selectPlace
     )
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MapScreen(
     contentPadding: PaddingValues = PaddingValues(),
-    markersData:StateFlow<List<PlaceMarkerModel>> = MutableStateFlow(emptyList())
+    markersData:StateFlow<List<PlaceMarkerModel>> = MutableStateFlow(emptyList()),
+    onSelectPlace:(PlaceModel?)->Unit = {},
+    selectedPlace:State<PlaceModel?> = mutableStateOf(null),
 ){
 
     val switchButtonState = rememberMapSwitchState()
+
+    val detailsPlaceBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LaunchedEffect(key1 = selectedPlace.value, block = {
+        if (selectedPlace.value == null)
+            detailsPlaceBottomSheetState.hide()
+        else
+            detailsPlaceBottomSheetState.show()
+    })
+
+    selectedPlace.value?.let { data ->
+        DetailsBottomSheet(
+            data = data,
+            sheetState = detailsPlaceBottomSheetState,
+            onDismiss = {
+                Log.i("DISMISS", data.toString())
+                onSelectPlace(null)
+            }
+        )
+    }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -66,7 +98,8 @@ private fun MapScreen(
                 SwitchButtonPosition.Map -> {
                     MapContent(
                         contentPadding = contentPadding,
-                        markersData = markersData
+                        markersData = markersData,
+                        onSelectPlace = onSelectPlace
                     )
                 }
                 SwitchButtonPosition.Ar -> {
@@ -89,7 +122,8 @@ private fun MapScreen(
 private fun MapContent(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
-    markersData:StateFlow<List<PlaceMarkerModel>> = MutableStateFlow(emptyList())
+    markersData:StateFlow<List<PlaceMarkerModel>> = MutableStateFlow(emptyList()),
+    onSelectPlace:(PlaceModel?)->Unit = {},
 ){
 
     val cameraPositionState = rememberCameraPositionState {
@@ -112,7 +146,12 @@ private fun MapContent(
             markersDataState.forEach { data ->
                 Marker(
                     icon = BitmapDescriptorFactory.fromBitmap(data.markerIcon),
-                    state = rememberMarkerState(position = LatLng(data.place.lat, data.place.lon))
+                    state = rememberMarkerState(position = LatLng(data.place.lat, data.place.lon)),
+                    tag = data.place,
+                    onClick = { marker ->
+                        onSelectPlace(marker.tag as PlaceModel)
+                        true
+                    }
                 )
             }
         }
