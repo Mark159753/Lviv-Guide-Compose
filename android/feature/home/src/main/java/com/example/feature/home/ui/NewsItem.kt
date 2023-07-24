@@ -1,6 +1,7 @@
 package com.example.feature.home.ui
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -35,7 +36,8 @@ import com.google.accompanist.placeholder.placeholder
 @Composable
 fun NewsItem(
     item:LocalNewsModel?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick:(url:String)-> Unit = {}
 ){
 
     val context = LocalContext.current
@@ -43,7 +45,9 @@ fun NewsItem(
     var isLoading by remember{ mutableStateOf(true) }
 
     Column(modifier = modifier
-        .width(150.dp)) {
+        .width(150.dp)
+        .clickable { item?.let { onClick(it.link) } })
+    {
         AsyncImage(
             model = item?.image,
             contentDescription = item?.description,

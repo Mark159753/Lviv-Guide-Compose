@@ -1,7 +1,6 @@
 package com.example.domain.usecases
 
 import android.content.Context
-import android.util.Log
 import coil.ImageLoader
 import coil.imageLoader
 import coil.request.ImageRequest
@@ -29,8 +28,6 @@ class LoadImageUseCase @Inject constructor(
                 size(size, size)
             }
         }.build()
-
-        Log.i("URL", url)
         loader.enqueue(request).job.await().drawable
     }
 }

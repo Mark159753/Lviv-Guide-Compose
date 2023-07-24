@@ -17,6 +17,9 @@ import com.example.placedetails.navigation.placeDetailsScreen
 import com.example.search.navigation.SearchRoute
 import com.example.search.navigation.navigateToSearchScreen
 import com.example.search.navigation.searchScreen
+import com.example.webview.navigation.WebViewNavigationRoute
+import com.example.webview.navigation.navigateToWebViewHome
+import com.example.webview.navigation.webViewScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import soup.compose.material.motion.animation.materialSharedAxisXIn
@@ -53,8 +56,14 @@ fun LvivGuideNavHost(
                     navController.navigateToSearchScreen()
                 }
             },
+            onNavToWebView = { link ->
+                if (navController.currentBackStackEntry?.lifecycleIsResumed() == true){
+                    navController.navigateToWebViewHome(link)
+                }
+            },
             enterTransition = {
                 when(initialState.destination.route){
+                    WebViewNavigationRoute,
                     PlaceDetailsRoute -> materialSharedAxisXIn(forward = false, slideDistance = SharedAxisSlideDiStance, durationMillis = SharedAxisDuration)
                     SearchRoute -> materialSharedAxisZIn(forward = false, durationMillis = SharedAxisDuration)
                     else -> null
@@ -62,6 +71,7 @@ fun LvivGuideNavHost(
             },
             exitTransition = {
                 when(targetState.destination.route){
+                    WebViewNavigationRoute,
                     PlaceDetailsRoute -> materialSharedAxisXOut(forward = true, slideDistance = SharedAxisSlideDiStance, durationMillis = SharedAxisDuration)
                     SearchRoute -> materialSharedAxisZOut(forward = true, durationMillis = SharedAxisDuration)
                     else -> null
@@ -69,6 +79,7 @@ fun LvivGuideNavHost(
             },
             popEnterTransition = {
                 when(initialState.destination.route){
+                    WebViewNavigationRoute,
                     PlaceDetailsRoute -> materialSharedAxisXIn(forward = false, slideDistance = SharedAxisSlideDiStance, durationMillis = SharedAxisDuration)
                     SearchRoute -> materialSharedAxisZIn(forward = false, durationMillis = SharedAxisDuration)
                     else -> null
@@ -76,6 +87,7 @@ fun LvivGuideNavHost(
             },
             popExitTransition = {
                 when(targetState.destination.route){
+                    WebViewNavigationRoute,
                     PlaceDetailsRoute -> materialSharedAxisXOut(forward = true, slideDistance = SharedAxisSlideDiStance, durationMillis = SharedAxisDuration)
                     SearchRoute -> materialSharedAxisZOut(forward = true, durationMillis = SharedAxisDuration)
                     else -> null
@@ -163,6 +175,39 @@ fun LvivGuideNavHost(
                 when(targetState.destination.route){
                     HomeNavigationRoute -> materialSharedAxisZOut(forward = false, durationMillis = SharedAxisDuration)
                     PlaceDetailsRoute -> materialSharedAxisXOut(forward = true, slideDistance = SharedAxisSlideDiStance, durationMillis = SharedAxisDuration)
+                    else -> null
+                }
+            }
+        )
+
+        webViewScreen(
+            onNavBack = {
+                if (navController.currentBackStackEntry?.lifecycleIsResumed() == true){
+                    navController.popBackStack()
+                }
+            },
+
+            enterTransition = {
+                when(initialState.destination.route){
+                    HomeNavigationRoute -> materialSharedAxisXIn(forward = true, slideDistance = SharedAxisSlideDiStance, durationMillis = SharedAxisDuration)
+                    else -> null
+                }
+            },
+            exitTransition = {
+                when(targetState.destination.route){
+                    HomeNavigationRoute -> materialSharedAxisXOut(forward = false, slideDistance = SharedAxisSlideDiStance, durationMillis = SharedAxisDuration)
+                    else -> null
+                }
+            },
+            popEnterTransition = {
+                when(initialState.destination.route){
+                    HomeNavigationRoute -> materialSharedAxisXIn(forward = false, slideDistance = SharedAxisSlideDiStance, durationMillis = SharedAxisDuration)
+                    else -> null
+                }
+            },
+            popExitTransition = {
+                when(targetState.destination.route){
+                    HomeNavigationRoute -> materialSharedAxisXOut(forward = false, slideDistance = SharedAxisSlideDiStance, durationMillis = SharedAxisDuration)
                     else -> null
                 }
             }

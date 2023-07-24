@@ -78,6 +78,7 @@ fun HomeRoute(
     contentPadding: PaddingValues,
     onPlaceClick:(id:Int, color:Int) -> Unit = {_,_ ->},
     onNavToSearch:()->Unit = {},
+    onNavToWebView:(link:String) -> Unit = {},
     viewModel:HomeViewModel = hiltViewModel()
 ){
 
@@ -101,7 +102,10 @@ fun HomeRoute(
         homeState = viewModel.uiState,
         onCategoryChange = viewModel::selectCategory,
         onPlaceClick = onPlaceClick,
-        onNavToSearch = onNavToSearch
+        onNavToSearch = onNavToSearch,
+        onNewsItemClick = { link ->
+            onNavToWebView(link)
+        }
     )
 }
 
@@ -112,6 +116,7 @@ private fun HomeScreen(
     onCategoryChange: (categoryId: Int?) -> Unit = {},
     onPlaceClick:(id:Int, color:Int) -> Unit = {_,_ ->},
     onNavToSearch:()->Unit = {},
+    onNewsItemClick:(link:String) -> Unit = {}
 ){
 
     val nestedScrollState = rememberNestedScrollState()
@@ -140,7 +145,8 @@ private fun HomeScreen(
                             placesListState.scrollToItem(0)
                         }
                     },
-                    onNavToSearch = onNavToSearch
+                    onNavToSearch = onNavToSearch,
+                    onNewsClick = onNewsItemClick
                 )
             },
             scrolableContent = {
@@ -175,7 +181,8 @@ private fun Header(
     isSticky:Boolean = false,
     headerState: HeaderState = HeaderState(),
     onCategoryChange:(categoryId:Int?)->Unit = {},
-    onNavToSearch:()->Unit = {}
+    onNavToSearch:()->Unit = {},
+    onNewsClick:(link:String) -> Unit = {}
 ){
 
     val weatherState by headerState.weather.collectAsStateWithLifecycle()
@@ -228,7 +235,8 @@ private fun Header(
                 count = localNewsState.size,
             ){ index ->
                 NewsItem(
-                    item = localNewsState[index]
+                    item = localNewsState[index],
+                    onClick = onNewsClick
                 )
             }
         }

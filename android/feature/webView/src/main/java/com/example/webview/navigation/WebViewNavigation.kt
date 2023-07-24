@@ -1,29 +1,31 @@
-package com.example.feature.home.navigation
+package com.example.webview.navigation
 
+import android.net.Uri
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
-import com.example.feature.home.ui.HomeRoute
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.webview.ui.WebViewRoute
 import com.google.accompanist.navigation.animation.composable
 
-const val HomeNavigationRoute = "home_route"
+const val UrlArg = "url"
+const val WebViewNavigationRoute = "web_view_route/{$UrlArg}"
 
-fun NavController.navigateToHome(navOptions: NavOptions? = null) {
-    this.navigate(HomeNavigationRoute, navOptions)
+fun NavController.navigateToWebViewHome(url:String, navOptions: NavOptions? = null) {
+    val encoded =  Uri.encode(url)
+    val route = "web_view_route/$encoded"
+    this.navigate(route, navOptions)
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.homeScreen(
-    contentPadding: PaddingValues = PaddingValues(),
-    onPlaceClick:(id:Int, color:Int) -> Unit = {_,_ ->},
-    onNavToSearch:()->Unit = {},
-    onNavToWebView:(link:String) -> Unit = {},
+fun NavGraphBuilder.webViewScreen(
+    onNavBack:()->Unit = {},
     enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
     exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
     popEnterTransition: (
@@ -34,17 +36,18 @@ fun NavGraphBuilder.homeScreen(
     )? = exitTransition,
 ) {
     composable(
-        route = HomeNavigationRoute,
+        route = WebViewNavigationRoute,
+        arguments = listOf(
+            navArgument(UrlArg) { type = NavType.StringType },
+        ),
         enterTransition = enterTransition,
         exitTransition = exitTransition,
         popExitTransition = popExitTransition,
         popEnterTransition = popEnterTransition
-    ) {
-        HomeRoute(
-            contentPadding = contentPadding,
-            onPlaceClick = onPlaceClick,
-            onNavToSearch = onNavToSearch,
-            onNavToWebView = onNavToWebView
+    ) { backStackEntry ->
+        WebViewRoute(
+            url = Uri.decode(backStackEntry.arguments?.getString(UrlArg)!!),
+            onNavBack = onNavBack
         )
     }
 }

@@ -25,6 +25,7 @@
             <option value="$PROJECT_DIR$/feature/home" />
             <option value="$PROJECT_DIR$/feature/map" />
             <option value="$PROJECT_DIR$/feature/search" />
+            <option value="$PROJECT_DIR$/feature/webView" />
             <option value="$PROJECT_DIR$/workers" />
           </set>
         </option>
