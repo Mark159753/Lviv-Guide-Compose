@@ -15,3 +15,7 @@ This app was built using Jetpack Compose and Node.js as a backend. The program i
 <img src="media/Screenshot_2.jpg" width="225"></img>
 <img src="media/Screenshot_3.jpg" width="225"></img>
 <video width="630" height="300" src="media/Video.mp4"></video>
+<video width="640" height="360" controls>
+  <source src="media/Video.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
