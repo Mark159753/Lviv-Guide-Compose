@@ -23,9 +23,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -48,11 +51,22 @@ enum class SwitchButtonPosition{
 @OptIn(ExperimentalMaterialApi::class)
 @Stable
 class MapSwitchState(
-    initialValue: SwitchButtonPosition = SwitchButtonPosition.Map
+    initialValue: SwitchButtonPosition = SwitchButtonPosition.Map,
+    internal val confirmStateChange:(state:SwitchButtonPosition)->Boolean = { true }
 ){
 
+    var currentState by mutableStateOf<SwitchButtonPosition>(initialValue)
+        internal set
+
     val swipeState = SwipeableState(
-        initialValue = initialValue
+        initialValue = initialValue,
+        confirmStateChange = { state ->
+            val isConfirmed = confirmStateChange(state)
+            if (isConfirmed){
+                currentState = state
+            }
+            isConfirmed
+        }
     )
 
     val progress:Float
@@ -82,10 +96,11 @@ class MapSwitchState(
 
 @Composable
 fun rememberMapSwitchState(
-    initialValue: SwitchButtonPosition = SwitchButtonPosition.Map
+    initialValue: SwitchButtonPosition = SwitchButtonPosition.Map,
+    confirmStateChange:(state:SwitchButtonPosition)->Boolean = { true }
 ): MapSwitchState {
     return rememberSaveable(saver = MapSwitchState.saver()) {
-        MapSwitchState(initialValue)
+        MapSwitchState(initialValue, confirmStateChange)
     }
 }
 
@@ -138,9 +153,12 @@ fun MapSwitchButton(
 
             IconButton(
                 onClick = {
-                      scope.launch {
-                          state.swipeState.animateTo(SwitchButtonPosition.Map)
-                      }
+                    if (state.confirmStateChange(SwitchButtonPosition.Map)){
+                        scope.launch {
+                            state.swipeState.animateTo(SwitchButtonPosition.Map)
+                            state.currentState = SwitchButtonPosition.Map
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxHeight()
@@ -159,8 +177,11 @@ fun MapSwitchButton(
 
             IconButton(
                 onClick = {
-                    scope.launch {
-                        state.swipeState.animateTo(SwitchButtonPosition.Ar)
+                    if (state.confirmStateChange(SwitchButtonPosition.Ar)){
+                        scope.launch {
+                            state.swipeState.animateTo(SwitchButtonPosition.Ar)
+                            state.currentState = SwitchButtonPosition.Ar
+                        }
                     }
                 },
                 modifier = Modifier

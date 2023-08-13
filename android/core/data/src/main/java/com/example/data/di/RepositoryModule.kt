@@ -10,7 +10,7 @@ import com.example.data.repository.weather.WeatherRepository
 import com.example.data.repository.weather.WeatherRepositoryImpl
 import com.example.data.until.CanUpdateHelper
 import com.example.data.until.CanUpdateHelperImpl
-import com.example.data.until.LocationProvider
+import com.example.data.until.location.LocationProvider
 import com.example.data.until.location.LocationProviderImpl
 import dagger.Binds
 import dagger.Module

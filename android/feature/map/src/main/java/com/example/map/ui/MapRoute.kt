@@ -1,19 +1,14 @@
-@file:OptIn(ExperimentalMaterialApi::class)
-
 package com.example.map.ui
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -26,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,9 +32,15 @@ import com.example.data.model.PlaceModel
 import com.example.domain.model.PlaceMarkerModel
 import com.example.domain.usecases.PlaceMarkerWidth
 import com.example.map.R
+import com.example.map.ui.ar.ArContent
+import com.example.map.ui.ar.helpers.DeviceCompatibility
+import com.example.map.ui.ar.helpers.ViewRenderData
 import com.example.ui.components.MapSwitchButton
 import com.example.ui.components.SwitchButtonPosition
 import com.example.ui.components.rememberMapSwitchState
+import com.example.ui.permissions.rememberCameraPermissions
+import com.example.ui.permissions.rememberLocationPermissions
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -63,23 +63,43 @@ fun MapRoute(
         contentPadding = contentPadding,
         markersData = viewModel.markersData,
         onSelectPlace = viewModel::selectPlace,
-        selectedPlace = viewModel.selectPlace,
-        myLocation = viewModel.myLocation
+        selectedPlace = viewModel.selectedPlace,
+        myLocation = viewModel.myLocation,
+        onLocationPermissionChanged = viewModel::onLocationPermissionChanged,
+        viewsNodesData = viewModel.viewRenders
     )
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 private fun MapScreen(
     contentPadding: PaddingValues = PaddingValues(),
     markersData:StateFlow<List<PlaceMarkerModel>> = MutableStateFlow(emptyList()),
     onSelectPlace:(PlaceModel?)->Unit = {},
     selectedPlace:State<PlaceModel?> = mutableStateOf(null),
-    myLocation:StateFlow<LatLng?> = MutableStateFlow(null)
+    myLocation:StateFlow<LatLng?> = MutableStateFlow(null),
+    onLocationPermissionChanged:(Boolean)->Unit = {},
+    viewsNodesData:StateFlow<List<ViewRenderData>> = MutableStateFlow(emptyList())
 ){
+    val context = LocalContext.current
 
-    val switchButtonState = rememberMapSwitchState()
+    val locationPermissions = rememberLocationPermissions()
+    val cameraPermissions = rememberCameraPermissions()
+
+    LaunchedEffect(key1 = locationPermissions.allPermissionsGranted, block = {
+        onLocationPermissionChanged(locationPermissions.allPermissionsGranted)
+    })
+
+    val switchButtonState = rememberMapSwitchState(
+        confirmStateChange = { state ->
+            if (state == SwitchButtonPosition.Ar){
+                return@rememberMapSwitchState DeviceCompatibility.requestArPermissions(locationPermissions, cameraPermissions, context)
+                        && DeviceCompatibility.requestGpsIfNotWork(context)
+            }
+            state == SwitchButtonPosition.Map
+        }
+    )
 
     val detailsPlaceBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -95,7 +115,6 @@ private fun MapScreen(
             data = data,
             sheetState = detailsPlaceBottomSheetState,
             onDismiss = {
-                Log.i("DISMISS", data.toString())
                 onSelectPlace(null)
             }
         )
@@ -107,7 +126,7 @@ private fun MapScreen(
     ){
 
         AnimatedContent(
-            targetState = switchButtonState.swipeState.currentValue,
+            targetState = switchButtonState.currentState,
         ) { state ->
             when(state){
                 SwitchButtonPosition.Map -> {
@@ -119,7 +138,9 @@ private fun MapScreen(
                     )
                 }
                 SwitchButtonPosition.Ar -> {
-                    ArContent()
+                    ArContent(
+                        viewsRendersData = viewsNodesData
+                    )
                 }
             }
         }
@@ -133,6 +154,7 @@ private fun MapScreen(
         )
     }
 }
+
 
 @Composable
 private fun MapContent(
@@ -194,16 +216,6 @@ private fun MapContent(
     }
 }
 
-@Composable
-fun ArContent(
-    modifier: Modifier = Modifier,
-){
-    Box(
-        modifier = modifier
-            .background(Color.Black)
-            .fillMaxSize()
-    )
-}
 
 @Composable
 private fun getBitmapDescriptor(

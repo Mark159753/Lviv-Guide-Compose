@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="bottom_sheet_description">Description</string>
+    <string name="need_permission_rationale">To Enabled Ar feature please give us Camera and Location permissions</string>
 </resources>

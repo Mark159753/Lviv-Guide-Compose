@@ -1,4 +1,4 @@
-package com.example.data.until
+package com.example.data.until.location
 
 import android.location.Location
 import kotlinx.coroutines.flow.Flow

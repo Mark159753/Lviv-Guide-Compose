@@ -8,7 +8,7 @@ import com.example.data.repository.categories.CategoriesRepository
 import com.example.data.repository.local_news.LocalNewsRepository
 import com.example.data.repository.places.PlacesRepository
 import com.example.data.repository.weather.WeatherRepository
-import com.example.data.until.LocationProvider
+import com.example.data.until.location.LocationProvider
 import com.example.feature.home.ui.state.HeaderState
 import com.example.feature.home.ui.state.HomeState
 import com.example.feature.home.ui.state.PlacesListState

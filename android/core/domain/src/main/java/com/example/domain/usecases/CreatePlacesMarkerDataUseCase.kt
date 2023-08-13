@@ -21,6 +21,10 @@ import com.example.domain.model.PlaceMarkerModel
 import com.example.domain.untils.getMarkerImageLoader
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -42,24 +46,27 @@ class CreatePlacesMarkerDataUseCase @Inject constructor(
         colors: List<Color>
     ) = withContext(dispatcher){
         val markerWidth = with(Density(context)){ PlaceMarkerWidth.toPx().roundToInt() }
+
         places.map { placeItem ->
-            val imageDrawable = imageLoader(
-                url = BuildConfig.BASE_URL + placeItem.headImage,
-                size = markerWidth,
-                loader = markerLoader
-            )
+            async {
+                val imageDrawable = imageLoader(
+                    url = BuildConfig.BASE_URL + placeItem.headImage,
+                    size = markerWidth,
+                    loader = markerLoader
+                )
 
-            val markerIcon = createMarkerIcon(
-                drawable = imageDrawable,
-                color = colors.random(),
-                width = markerWidth
-            )
+                val markerIcon = createMarkerIcon(
+                    drawable = imageDrawable,
+                    color = colors.random(),
+                    width = markerWidth
+                )
 
-            PlaceMarkerModel(
-                place = placeItem,
-                markerIcon = markerIcon
-            )
-        }
+                PlaceMarkerModel(
+                    place = placeItem,
+                    markerIcon = markerIcon
+                )
+            }
+        }.awaitAll()
     }
 
     private fun createMarkerIcon(

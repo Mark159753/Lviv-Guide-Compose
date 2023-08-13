@@ -6,7 +6,6 @@ import android.location.Location
 import android.os.Looper
 import android.util.Log
 import com.example.core.common.exstantion.hasLocationPermission
-import com.example.data.until.LocationProvider
 import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Granularity
@@ -30,7 +29,7 @@ import kotlin.coroutines.suspendCoroutine
 class LocationProviderImpl @Inject constructor (
     @ApplicationContext
     private val context: Context
-):LocationProvider {
+): LocationProvider {
 
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     private val locationRequest: LocationRequest

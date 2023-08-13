@@ -9,7 +9,7 @@ import com.example.core.common.exstantion.distanceToFormatted
 import com.example.core.common.model.response.ResultWrapper
 import com.example.data.model.PlaceDetailsModel
 import com.example.data.repository.places.PlacesRepository
-import com.example.data.until.LocationProvider
+import com.example.data.until.location.LocationProvider
 import com.example.placedetails.navigation.ColorArg
 import com.example.placedetails.navigation.IdArg
 import dagger.hilt.android.lifecycle.HiltViewModel

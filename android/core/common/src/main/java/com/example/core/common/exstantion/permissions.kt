@@ -16,3 +16,10 @@ fun Context.hasLocationPermission():Boolean{
             ) ==  PackageManager.PERMISSION_GRANTED
 
 }
+
+fun Context.hasCameraPermission():Boolean{
+    return ContextCompat.checkSelfPermission(
+        this,
+        Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
+}
